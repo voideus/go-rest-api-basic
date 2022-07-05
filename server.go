@@ -9,13 +9,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"gitlab.com/voideus/go-rest-api/controller"
 	"gitlab.com/voideus/go-rest-api/middlewares"
+	"gitlab.com/voideus/go-rest-api/repository"
 	"gitlab.com/voideus/go-rest-api/service"
 )
 
 var (
-	videoService service.VideoService = service.New()
-	loginService service.LoginService = service.NewLoginService()
-	jwtService   service.JWTService   = service.NewJWTService()
+	videoRepository repository.VideoRepository = repository.NewVideoRepository()
+	videoService    service.VideoService       = service.New(videoRepository)
+	loginService    service.LoginService       = service.NewLoginService()
+	jwtService      service.JWTService         = service.NewJWTService()
 
 	videoController controller.VideoController = controller.New(videoService)
 	loginController controller.LoginController = controller.NewLoginController(loginService, jwtService)
@@ -28,6 +30,7 @@ func setLogOutput() {
 }
 
 func main() {
+	defer videoRepository.CloseDB()
 	setLogOutput()
 
 	server := gin.New()
@@ -69,6 +72,24 @@ func main() {
 				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			} else {
 				ctx.JSON(http.StatusOK, gin.H{"message": "Video Input is Valid"})
+			}
+		})
+
+		apiRoutes.PUT("videos/:id", func(ctx *gin.Context) {
+			err := videoController.Update(ctx)
+			if err != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			} else {
+				ctx.JSON(http.StatusOK, gin.H{"message": "Video updated successfully"})
+			}
+		})
+
+		apiRoutes.DELETE("videos/:id", func(ctx *gin.Context) {
+			err := videoController.Delete(ctx)
+			if err != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			} else {
+				ctx.JSON(http.StatusOK, gin.H{"message": "Video deleted successfully"})
 			}
 		})
 	}
