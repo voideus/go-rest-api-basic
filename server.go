@@ -14,13 +14,17 @@ import (
 )
 
 var (
-	videoRepository repository.VideoRepository = repository.NewVideoRepository()
-	videoService    service.VideoService       = service.New(videoRepository)
-	loginService    service.LoginService       = service.NewLoginService()
-	jwtService      service.JWTService         = service.NewJWTService()
+	videoRepository   repository.VideoRepository   = repository.NewVideoRepository()
+	articleRepository repository.ArticleRepository = repository.NewArticleRepository()
 
-	videoController controller.VideoController = controller.New(videoService)
-	loginController controller.LoginController = controller.NewLoginController(loginService, jwtService)
+	videoService   service.VideoService   = service.New(videoRepository)
+	articleService service.ArticleService = service.NewArticleRepoService(articleRepository)
+	loginService   service.LoginService   = service.NewLoginService()
+	jwtService     service.JWTService     = service.NewJWTService()
+
+	videoController   controller.VideoController   = controller.New(videoService)
+	articleController controller.ArticleController = controller.NewArticleController(articleService)
+	loginController   controller.LoginController   = controller.NewLoginController(loginService, jwtService)
 )
 
 func setLogOutput() {
@@ -60,7 +64,8 @@ func main() {
 		}
 	})
 
-	apiRoutes := server.Group("/api", middlewares.AuthorizeJWT())
+	// apiRoutes := server.Group("/api", middlewares.AuthorizeJWT())
+	apiRoutes := server.Group("/api")
 	{
 		apiRoutes.GET("/videos", func(ctx *gin.Context) {
 			ctx.JSON(200, videoController.FindAll())
@@ -75,7 +80,7 @@ func main() {
 			}
 		})
 
-		apiRoutes.PUT("videos/:id", func(ctx *gin.Context) {
+		apiRoutes.PUT("/videos/:id", func(ctx *gin.Context) {
 			err := videoController.Update(ctx)
 			if err != nil {
 				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -84,13 +89,26 @@ func main() {
 			}
 		})
 
-		apiRoutes.DELETE("videos/:id", func(ctx *gin.Context) {
+		apiRoutes.DELETE("/videos/:id", func(ctx *gin.Context) {
 			err := videoController.Delete(ctx)
 			if err != nil {
 				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			} else {
 				ctx.JSON(http.StatusOK, gin.H{"message": "Video deleted successfully"})
 			}
+		})
+
+		apiRoutes.POST("/articles", func(ctx *gin.Context) {
+			err := articleController.Save(ctx)
+			if err != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			} else {
+				ctx.JSON(http.StatusOK, gin.H{"message": "Article added success."})
+			}
+		})
+
+		apiRoutes.GET("/articles", func(ctx *gin.Context) {
+			ctx.JSON(200, articleController.FindAll())
 		})
 	}
 

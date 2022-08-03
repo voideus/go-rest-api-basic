@@ -4,10 +4,10 @@ import "time"
 
 type Person struct {
 	ID        uint64 `gorm:"primary_key:auto_increment" json:"id"`
-	FirstName string `json:"firstname" binding:"required" gorm:"type:varchar(32)"`
-	LastName  string `json:"lastname" binding:"required" gorm:"type:varchar(32)"`
-	Age       int8   `json:"age" binding:"gte=1,lte=150"`
-	Email     string `json:"email" binding:"required,email" gorm:"type:varchar(256)"`
+	FirstName string `json:"firstname"  gorm:"type:varchar(32)"`
+	LastName  string `json:"lastname"  gorm:"type:varchar(32)"`
+	Age       int8   `json:"age" `
+	Email     string `json:"email" gorm:"type:varchar(256)"`
 }
 
 type Video struct {

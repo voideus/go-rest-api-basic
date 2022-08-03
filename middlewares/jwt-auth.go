@@ -13,8 +13,20 @@ func AuthorizeJWT() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		const BEARER_SCHEMA = "Bearer "
 		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			c.JSON(401, gin.H{
+				"message": "No auth header passed.",
+			})
+			c.Abort()
+			return
+		}
 		tokenString := authHeader[len(BEARER_SCHEMA):]
-		
+		if tokenString == "" {
+			c.JSON(401, gin.H{
+				"message": "No token string passed.",
+			})
+			return
+		}
 
 		token, err := service.NewJWTService().ValidateToken(tokenString)
 

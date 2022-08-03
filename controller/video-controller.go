@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -34,6 +35,7 @@ func New(service service.VideoService) VideoController {
 }
 
 func (c *controller) FindAll() []entity.Video {
+	fmt.Println("getting videos ===>")
 	return c.service.FindAll()
 }
 
