@@ -1,9 +1,9 @@
 package repository
 
 import (
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"gitlab.com/voideus/go-rest-api/entity"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 type VideoRepository interface {
@@ -19,7 +19,7 @@ type database struct {
 }
 
 func NewVideoRepository() VideoRepository {
-	db, err := gorm.Open("sqlite3", "test.db")
+	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 	if err != nil {
 		panic("Failed to connect database")
 	}
@@ -31,10 +31,7 @@ func NewVideoRepository() VideoRepository {
 }
 
 func (db *database) CloseDB() {
-	err := db.connection.Close()
-	if err != nil {
-		panic("Failed to close database")
-	}
+
 }
 
 func (db *database) Save(video entity.Video) {

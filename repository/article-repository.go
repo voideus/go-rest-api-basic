@@ -1,15 +1,15 @@
 package repository
 
 import (
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"gitlab.com/voideus/go-rest-api/entity"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 type ArticleRepository interface {
 	Save(article entity.Article)
 	FindAll() []entity.Article
-	FindOne(id string) entity.Article
+	FindById(id int) (*entity.Article, error)
 }
 
 type articleRepository struct {
@@ -17,7 +17,7 @@ type articleRepository struct {
 }
 
 func NewArticleRepository() ArticleRepository {
-	db, err := gorm.Open("sqlite3", "test.db")
+	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 	if err != nil {
 		panic("Failed to connect database")
 	}
@@ -39,8 +39,15 @@ func (ar *articleRepository) FindAll() []entity.Article {
 	return articles
 }
 
-func (ar *articleRepository) FindOne(id string) entity.Article {
+func (ar *articleRepository) FindById(id int) (*entity.Article, error) {
 	var article entity.Article
-	ar.db.Preload("Person").Where("id = ?", id).First(&article)
-	return article
+	result := ar.db.Preload("Person").Where("id = ?", id).First(&article)
+
+	if result.Error != nil {
+		err := result.Error
+
+		return nil, err
+	}
+
+	return &article, nil
 }

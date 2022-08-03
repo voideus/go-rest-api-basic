@@ -1,6 +1,8 @@
 package service
 
 import (
+	"strconv"
+
 	"gitlab.com/voideus/go-rest-api/entity"
 	"gitlab.com/voideus/go-rest-api/repository"
 )
@@ -8,6 +10,7 @@ import (
 type ArticleService interface {
 	Save(entity.Article) entity.Article
 	FindAll() []entity.Article
+	FindArticleById(articleId string) (*entity.Article, error)
 }
 
 type articleService struct {
@@ -27,5 +30,13 @@ func (articeService *articleService) Save(article entity.Article) entity.Article
 
 func (articeService *articleService) FindAll() []entity.Article {
 	return articeService.articleRepository.FindAll()
+}
 
+func (articeService *articleService) FindArticleById(articleId string) (*entity.Article, error) {
+	id, err := strconv.Atoi(articleId)
+	if err != nil {
+		return nil, err
+	}
+
+	return articeService.articleRepository.FindById(id)
 }

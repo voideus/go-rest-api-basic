@@ -14,17 +14,20 @@ import (
 )
 
 var (
-	videoRepository   repository.VideoRepository   = repository.NewVideoRepository()
-	articleRepository repository.ArticleRepository = repository.NewArticleRepository()
+	videoRepository      repository.VideoRepository      = repository.NewVideoRepository()
+	articleRepository    repository.ArticleRepository    = repository.NewArticleRepository()
+	creditCardRepository repository.CreditCardRepository = repository.NewCreditCardRepo()
 
-	videoService   service.VideoService   = service.New(videoRepository)
-	articleService service.ArticleService = service.NewArticleRepoService(articleRepository)
-	loginService   service.LoginService   = service.NewLoginService()
-	jwtService     service.JWTService     = service.NewJWTService()
+	videoService      service.VideoService      = service.New(videoRepository)
+	articleService    service.ArticleService    = service.NewArticleRepoService(articleRepository)
+	creditCardService service.CreditCardService = service.NewCreditCardService(creditCardRepository)
+	loginService      service.LoginService      = service.NewLoginService()
+	jwtService        service.JWTService        = service.NewJWTService()
 
-	videoController   controller.VideoController   = controller.New(videoService)
-	articleController controller.ArticleController = controller.NewArticleController(articleService)
-	loginController   controller.LoginController   = controller.NewLoginController(loginService, jwtService)
+	videoController      controller.VideoController      = controller.New(videoService)
+	articleController    controller.ArticleController    = controller.NewArticleController(articleService)
+	creditCardController controller.CreditCardController = controller.NewCreditCardController(creditCardRepository)
+	loginController      controller.LoginController      = controller.NewLoginController(loginService, jwtService)
 )
 
 func setLogOutput() {
@@ -110,7 +113,11 @@ func main() {
 		apiRoutes.GET("/articles", func(ctx *gin.Context) {
 			ctx.JSON(200, articleController.FindAll())
 		})
+
+		apiRoutes.GET("/articles/:id", articleController.FindArticle)
 	}
+	apiRoutes.GET("/credit-cards", creditCardController.FindAll)
+	apiRoutes.POST("/credit-cards", creditCardController.Save)
 
 	viewRoutes := server.Group("/view")
 	{
