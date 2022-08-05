@@ -11,4 +11,14 @@ type Article struct {
 	Body        string `json:"body" binding:"required" gorm:"type:varchar(255)"`
 	PersonID    uint64 `json:"authorId"`
 	Person      Person ` gorm:"foreignKey:PersonID"`
+	Comments    []Comment
+}
+
+type Comment struct {
+	Comment   string
+	ArticleID uint
+}
+
+type CommentInput struct {
+	Comment string `json:"comment" binding:"required"`
 }

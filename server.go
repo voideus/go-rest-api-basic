@@ -17,16 +17,19 @@ var (
 	videoRepository      repository.VideoRepository      = repository.NewVideoRepository()
 	articleRepository    repository.ArticleRepository    = repository.NewArticleRepository()
 	creditCardRepository repository.CreditCardRepository = repository.NewCreditCardRepo()
+	personCardRepository repository.PersonRepo           = repository.NewPersonRepo()
 
 	videoService      service.VideoService      = service.New(videoRepository)
 	articleService    service.ArticleService    = service.NewArticleRepoService(articleRepository)
 	creditCardService service.CreditCardService = service.NewCreditCardService(creditCardRepository)
+	personService     service.PersonService     = service.NewPersonService(personCardRepository)
 	loginService      service.LoginService      = service.NewLoginService()
 	jwtService        service.JWTService        = service.NewJWTService()
 
 	videoController      controller.VideoController      = controller.New(videoService)
 	articleController    controller.ArticleController    = controller.NewArticleController(articleService)
-	creditCardController controller.CreditCardController = controller.NewCreditCardController(creditCardRepository)
+	creditCardController controller.CreditCardController = controller.NewCreditCardController(creditCardService)
+	personController     controller.PersonController     = controller.NewPersonController(personService)
 	loginController      controller.LoginController      = controller.NewLoginController(loginService, jwtService)
 )
 
@@ -115,9 +118,15 @@ func main() {
 		})
 
 		apiRoutes.GET("/articles/:id", articleController.FindArticle)
+		apiRoutes.POST("/articles/:id/comments", articleController.AddCommentToArticle)
+
+		apiRoutes.GET("/credit-cards", creditCardController.FindAll)
+		apiRoutes.POST("/credit-cards", creditCardController.Save)
+
+		apiRoutes.GET("/people", personController.FindAll)
+		apiRoutes.GET("/people/:id/languages", personController.GetLanguagesOfPerson)
+		apiRoutes.POST("/people/:id/languages", personController.AddLanguagesToPerson)
 	}
-	apiRoutes.GET("/credit-cards", creditCardController.FindAll)
-	apiRoutes.POST("/credit-cards", creditCardController.Save)
 
 	viewRoutes := server.Group("/view")
 	{

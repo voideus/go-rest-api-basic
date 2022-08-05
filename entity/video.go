@@ -1,6 +1,10 @@
 package entity
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Person struct {
 	ID         uint64 `gorm:"primary_key:auto_increment" json:"id"`
@@ -8,7 +12,8 @@ type Person struct {
 	LastName   string `json:"lastname"  gorm:"type:varchar(32)"`
 	Age        int8   `json:"age" `
 	Email      string `json:"email" gorm:"type:varchar(256)"`
-	CreditCard CreditCard
+	CreditCard *CreditCard
+	Languages  []*Language `gorm:"many2many:user_languages;"`
 }
 
 type Video struct {
@@ -18,6 +23,20 @@ type Video struct {
 	URL         string    `json:"url" binding:"required,url" gorm:"type:varchar(256);UNIQUE"`
 	Author      Person    `json:"author" binding:"required" gorm:"foreignkey:PersonID"`
 	PersonID    uint64    `json:"-"`
-	CreatedAt   time.Time `json:"-" gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt   time.Time `json:"-" gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
+	CreatedAt   time.Time `json:"created_at" gorm:"default:CURRENT_TIMESTAMP"`
+	UpdatedAt   time.Time `json:"updated_at" gorm:"default:CURRENT_TIMESTAMP" `
+}
+
+type Language struct {
+	gorm.Model
+	Name   string
+	People []*Person `gorm:"many2many:user_languages;"`
+}
+
+type LanguageOnly struct {
+	Name string `json:"name"`
+}
+
+type LanguageInput struct {
+	Languages []LanguageOnly `json:"languages"`
 }

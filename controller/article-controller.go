@@ -12,6 +12,7 @@ type ArticleController interface {
 	Save(ctx *gin.Context) error
 	FindAll() []entity.Article
 	FindArticle(ctx *gin.Context)
+	AddCommentToArticle(ctx *gin.Context)
 }
 
 type articleController struct {
@@ -53,5 +54,48 @@ func (ac *articleController) FindArticle(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"data": article,
+	})
+}
+
+func (ac *articleController) AddCommentToArticle(ctx *gin.Context) {
+	var comment entity.CommentInput
+	err := ctx.ShouldBindJSON(&comment)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"should bind error": err.Error(),
+		})
+		return
+	}
+
+	err = validate.Struct(comment)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"validate struct error": err.Error(),
+		})
+		return
+	}
+
+	articleId := ctx.Param("id")
+
+	_, err1 := ac.service.FindArticleById(articleId)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err1.Error(),
+		})
+		return
+	}
+
+	_, err2 := ac.service.AddComment(articleId, comment.Comment)
+
+	if err2 != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err2.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg": "comment added successfully",
 	})
 }
